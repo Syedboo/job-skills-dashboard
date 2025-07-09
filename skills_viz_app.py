@@ -7,16 +7,16 @@ import seaborn as sns
 st.set_page_config(page_title="Skill Trends by Location and Company", layout="wide")
 st.title("📊 Top In-Demand Skills for Data Science Roles")
 
-# Load exploded dataset
+# Load exploded dataset from GitHub
 @st.cache_data
 def load_data():
     url = "https://raw.githubusercontent.com/Syedboo/job-skills-dashboard/main/exploded_skills.csv"
     return pd.read_csv(url)
 
 df = load_data()
-df = df.dropna(subset=['extracted_skills'])
 
-# Fill missing company names
+# Drop NA skills and fill missing company names
+df = df.dropna(subset=['extracted_skills'])
 df['companyName'] = df['companyName'].fillna("Unknown")
 
 # Sidebar filters
@@ -24,12 +24,12 @@ st.sidebar.header("🔍 Filters")
 
 # Location filter
 locations = sorted(df['location'].dropna().unique().tolist())
-locations.insert(0, "All")
+locations.insert(0, "All")  # Add 'All' option
 selected_location = st.sidebar.selectbox("Select a Location", locations)
 
 # Company filter
-companies = sorted(df['companyName'].dropna().unique().tolist())
-companies.insert(0, "All")
+companies = sorted(df['companyName'].unique().tolist())
+companies.insert(0, "All")  # Add 'All' option
 selected_company = st.sidebar.selectbox("Select a Company", companies)
 
 # Top N filter
@@ -37,6 +37,7 @@ top_n = st.sidebar.slider("Top N Skills", min_value=5, max_value=50, value=15, s
 
 # Apply filters
 filtered_df = df.copy()
+
 if selected_location != "All":
     filtered_df = filtered_df[filtered_df['location'] == selected_location]
 
@@ -71,6 +72,15 @@ ax.set_ylabel("Skill")
 ax.set_title(f"Top {top_n} Skills in {loc_label} at {comp_label}", fontsize=14)
 st.pyplot(fig)
 
-# Optional: show raw table
+# Optional: View raw data table
 with st.expander("📄 View Raw Skill Count Table"):
     st.dataframe(top_skills)
+
+# Optional: Download filtered skill data
+csv = top_skills.to_csv(index=False).encode('utf-8')
+st.download_button(
+    label="⬇️ Download Skill Counts as CSV",
+    data=csv,
+    file_name=f"skills_{loc_label}_{comp_label}.csv",
+    mime='text/csv',
+)
