@@ -10,7 +10,8 @@ st.title("📊 Top In-Demand Skills for Data Science roles by Location")
 # Load exploded dataset
 @st.cache_data
 def load_data():
-    return pd.read_csv("C:/Users/tabu9/PycharmProjects/pythonProject/exploded_skills.csv")  # <-- Replace with your actual path
+    url = "https://raw.githubusercontent.com/Syedboo/job-skills-dashboard/main/exploded_skills.csv"
+    return pd.read_csv(url)
 
 df = load_data()
 
