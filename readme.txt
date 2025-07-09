@@ -18,5 +18,3 @@ An interactive Streamlit app that analyzes in-demand skills for data science job
 Here’s what the app looks like:
 
 ![screenshot](screenshot.png)
-
-
