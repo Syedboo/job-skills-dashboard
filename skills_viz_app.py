@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Streamlit page setup
-st.set_page_config(page_title="Skill Trends by Location", layout="wide")
-st.title("📊 Top In-Demand Skills for Data Science roles by Location")
+st.set_page_config(page_title="Skill Trends by Location and Company", layout="wide")
+st.title("📊 Top In-Demand Skills for Data Science Roles")
 
 # Load exploded dataset
 @st.cache_data
@@ -14,27 +14,34 @@ def load_data():
     return pd.read_csv(url)
 
 df = load_data()
-
-# Drop NA skills just in case
 df = df.dropna(subset=['extracted_skills'])
+
+# Fill missing company names
+df['companyName'] = df['companyName'].fillna("Unknown")
 
 # Sidebar filters
 st.sidebar.header("🔍 Filters")
 
 # Location filter
 locations = sorted(df['location'].dropna().unique().tolist())
-locations.insert(0, "All")  # Add 'All' to top of list
+locations.insert(0, "All")
 selected_location = st.sidebar.selectbox("Select a Location", locations)
 
+# Company filter
+companies = sorted(df['companyName'].dropna().unique().tolist())
+companies.insert(0, "All")
+selected_company = st.sidebar.selectbox("Select a Company", companies)
 
 # Top N filter
 top_n = st.sidebar.slider("Top N Skills", min_value=5, max_value=50, value=15, step=1)
 
-if selected_location == "All":
-    filtered_df = df.copy()
-else:
-    filtered_df = df[df['location'] == selected_location]
+# Apply filters
+filtered_df = df.copy()
+if selected_location != "All":
+    filtered_df = filtered_df[filtered_df['location'] == selected_location]
 
+if selected_company != "All":
+    filtered_df = filtered_df[filtered_df['companyName'] == selected_company]
 
 # Count top skills
 top_skills = (
@@ -45,20 +52,23 @@ top_skills = (
 )
 top_skills.columns = ['skill', 'count']
 
-# Visualization
-st.subheader(f"Top {top_n} Skills in 📍 {selected_location}")
+# Dynamic subtitle
+loc_label = selected_location if selected_location != "All" else "All Locations"
+comp_label = selected_company if selected_company != "All" else "All Companies"
+st.subheader(f"Top {top_n} Skills in 📍 {loc_label} at 🏢 {comp_label}")
 
-fig, ax = plt.subplots(figsize=(10, max(6, 0.4 * top_n)))
+# Plotting
+fig, ax = plt.subplots(figsize=(10, max(6, 0.4 * len(top_skills))))
 sns.barplot(data=top_skills, y='skill', x='count', palette='crest', ax=ax)
 
-# Add count labels
+# Add value labels
 for p in ax.patches:
     ax.text(p.get_width() + 1, p.get_y() + p.get_height() / 2,
             int(p.get_width()), ha='left', va='center', fontsize=9)
 
-ax.set_title(f"Top {top_n} Skills in {selected_location}", fontsize=14)
-ax.set_xlabel("Number of Job Mentions")
+ax.set_xlabel("Number of Mentions")
 ax.set_ylabel("Skill")
+ax.set_title(f"Top {top_n} Skills in {loc_label} at {comp_label}", fontsize=14)
 st.pyplot(fig)
 
 # Optional: show raw table
