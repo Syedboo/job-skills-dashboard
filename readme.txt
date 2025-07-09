@@ -13,9 +13,6 @@ An interactive Streamlit app that analyzes in-demand skills for data science job
 - Python, pandas, seaborn, Streamlit
 - Real job listings data from Naukri
 
-## 📸 Screenshot
-
-## 📸 Screenshot
 
 Here’s what the app looks like:
 
